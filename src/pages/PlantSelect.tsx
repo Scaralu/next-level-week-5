@@ -38,7 +38,7 @@ export function PlantSelect() {
 
 	const [page, setPage] = useState(1);
 	const [isLoadingMore, setIsLoadingMore] = useState(true);
-	
+
 	const [isLoading, setIsLoading] = useState(true);
 
 	async function fetchPlants(){
@@ -46,7 +46,6 @@ export function PlantSelect() {
 			.get(`plants?_sort=name&_order=asc&_page=${page}&_limit=8`);
 
 		if (!data) return setIsLoading(true);
-		console.log(data);
 
 		if (page > 1) {
 			setPlants(oldValue => [...oldValue, ...data]);
@@ -78,7 +77,6 @@ export function PlantSelect() {
 		if (distance < 1) return;
 		setIsLoadingMore(true);
 		setPage(oldValue => oldValue + 1);
-		console.log(page);
 		fetchPlants()
 	}
 
