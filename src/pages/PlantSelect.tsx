@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, FlatList } from 'react-native';
+import { Text, View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 
 import { EnvironmentButton } from '../components/EnvironmentButton';
 import { Header } from '../components/Header';
@@ -29,16 +29,36 @@ interface PlantProps {
 	}
 }
 
-
 export function PlantSelect() {
 	const [environment, setEnvironment] = useState<EnvironmentProps[]>([]);
 	const [environmentSelected, setEnvironmentSelected] = useState('all'); 
 
-
 	const [plants, setPlants] = useState<PlantProps[]>([]);
 	const [filteredPlants, setFilteredPlants] = useState<PlantProps[]>([]);
 
+	const [page, setPage] = useState(1);
+	const [isLoadingMore, setIsLoadingMore] = useState(true);
+	
 	const [isLoading, setIsLoading] = useState(true);
+
+	async function fetchPlants(){
+		const { data } = await api
+			.get(`plants?_sort=name&_order=asc&_page=${page}&_limit=8`);
+
+		if (!data) return setIsLoading(true);
+		console.log(data);
+
+		if (page > 1) {
+			setPlants(oldValue => [...oldValue, ...data]);
+			setFilteredPlants(oldValue => [...oldValue, ...data]);
+		} else {
+			setPlants(data);
+			setFilteredPlants(data);
+		}
+
+		setIsLoading(false);
+		setIsLoadingMore(false);
+	}
 
 	function handleEnvironmentSelected(environmentKey: string) {
 		setEnvironmentSelected(environmentKey);
@@ -52,6 +72,14 @@ export function PlantSelect() {
 		)
 
 		setFilteredPlants(filtered)
+	}
+
+	function handleFetchMore(distance: number) {
+		if (distance < 1) return;
+		setIsLoadingMore(true);
+		setPage(oldValue => oldValue + 1);
+		console.log(page);
+		fetchPlants()
 	}
 
 	useEffect(() => {
@@ -70,12 +98,6 @@ export function PlantSelect() {
 	}, [])
 
 	useEffect(() => {
-		async function fetchPlants(){
-			const { data } = await api
-				.get('plants?_sort=name&_order=asc');
-			setPlants(data);
-			setFilteredPlants(data)
-		}
 		fetchPlants();
 	}, [])
 
@@ -111,6 +133,13 @@ export function PlantSelect() {
 			</View>
 			<View style={styles.plants}>
 				<FlatList 
+					onEndReachedThreshold={0.15}
+					onEndReached={({distanceFromEnd}) => handleFetchMore(distanceFromEnd)}
+					ListFooterComponent={
+						isLoadingMore
+						? <ActivityIndicator color={colors.green} />
+						: <></>
+					}
 					data={filteredPlants}
 					showsVerticalScrollIndicator={false}
 					numColumns={2}
