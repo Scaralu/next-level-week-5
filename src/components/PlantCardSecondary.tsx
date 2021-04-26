@@ -1,6 +1,9 @@
+import { Feather } from '@expo/vector-icons';
 import React from 'react';
-import { Text, StyleSheet, View } from 'react-native';
+import { Text, StyleSheet, View, Animated } from 'react-native';
 import { RectButton, RectButtonProps } from 'react-native-gesture-handler';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+
 
 import { SvgFromUri } from 'react-native-svg';
 
@@ -13,27 +16,44 @@ interface PlantProps extends RectButtonProps {
     photo: string;
     hour: string;
   }
+  handleRemove: () => void
 }
 
-export const PlantCardSecondary = ({data, ...rest}: PlantProps) => {
+export const PlantCardSecondary = ({data, handleRemove,...rest}: PlantProps) => {
   return (
-    <RectButton
-      style={styles.container}
-      {...rest}
+    <Swipeable
+      overshootRight={false}
+      renderRightActions={() => (
+        <Animated.View>
+          <View>
+            <RectButton
+              style={styles.buttonRemove}
+              onPress={handleRemove}
+            >
+              <Feather name='trash' size={32} color={colors.white}/>
+            </RectButton>
+          </View>
+        </Animated.View>
+      )}
     >
-      <SvgFromUri uri={data.photo} width={50} height={50}/>
-      <Text style={styles.title}>
-        {data.name}
-      </Text>
-      <View style={styles.details}>
-        <Text style={styles.timeLabel}>
-          Regar às
+      <RectButton
+        style={styles.container}
+        {...rest}
+      >
+        <SvgFromUri uri={data.photo} width={50} height={50}/>
+        <Text style={styles.title}>
+          {data.name}
         </Text>
-        <Text style={styles.time}>
-          {data.hour}
-        </Text>
-      </View>
-    </RectButton>
+        <View style={styles.details}>
+          <Text style={styles.timeLabel}>
+            Regar às
+          </Text>
+          <Text style={styles.time}>
+            {data.hour}
+          </Text>
+        </View>
+      </RectButton>
+    </Swipeable>
   )
 }
 
@@ -67,5 +87,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: fonts.heading,
     color: colors.heading
+  },
+  buttonRemove: {
+    width: 130,
+    height: 100,
+    backgroundColor: colors.red,
+    marginTop: 15,
+    marginLeft: -30,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    bottom: 10,
+    paddingRight: 35,
   }
 })
+
